@@ -44,6 +44,11 @@ const vec4 cmcol = vec4(0.050,0.009,0.016,1.000);
 // ----- Gausian controlls --------------------------------
 const float sigma = 1.316;
 const float intArea = 0.280;
+// for distance d, the probability density is defined by the definite integral of a bell curve over
+// [d + intArea, d - intArea]
+
+const float sdCutoff = 3.376;
+// the pixel will not account for any vectors this many standard deviatiosn removed
 
 
 // ----- Visualisation controlls --------------------------
@@ -140,8 +145,13 @@ void main(){
        float a = d - intArea;
    	float b = d + intArea;
 
-       sum *= termScaleFactor*( erf( b / (sqrt(2.0)*sigma) ) - erf( a / (sqrt(2.0)*sigma)));
-
+      if (sdCutoff * sigma < d){
+        sum *= termScaleFactor*( erf( (sdCutoff * sigma + intArea) / (sqrt(2.0)*sigma) ) - erf( (sdCutoff * sigma - intArea) / (sqrt(2.0)*sigma)));
+    }
+    else{
+		sum *= termScaleFactor*( erf( b / (sqrt(2.0)*sigma) ) - erf( a / (sqrt(2.0)*sigma)));
+    }
+      
        if (d < pointThickness){ ispoint = true;}
        // evaluates if pixel is within cutoff to render as point
 
